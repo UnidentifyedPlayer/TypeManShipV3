@@ -226,7 +226,8 @@ namespace TypeManShip
             GetData("users", 0);
             GetData("password_entries", 0);
             data.Tables["users"].Columns[0].ReadOnly = true;
-
+            data.Tables["users"].Columns[2].ReadOnly = false;
+            data.Tables["users"].Columns[3].ReadOnly = true;
             data.Tables["password_entries"].Columns[0].ReadOnly = true;
           
             //ForeignKeyConstraint foreignKey = new ForeignKeyConstraint(data.Tables["un_groups"].Columns[0], data.Tables["students"].Columns[2])
