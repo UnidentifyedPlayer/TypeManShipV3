@@ -14,6 +14,7 @@ namespace TypeManShip
     {
         TableRelay users_relay;
         TableRelay passw_entries_relay;
+        TableRelay user_entries;
         Dictionary<string, TableRelay> relays;
         MySqlConnection connection;
         public DataSet data;
@@ -35,6 +36,10 @@ namespace TypeManShip
             users_relay = new TableRelay(connection, "users");
             passw_entries_relay = new TableRelay(connection, "password_entries");
 
+            //queries for "users" table
+
+            //insert query
+
             users_relay.adapter.InsertCommand = new MySqlCommand("user_entry", connection);
             users_relay.adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
             users_relay.adapter.InsertCommand.Parameters.Add(new MySqlParameter("login", MySqlDbType.VarString, 40, "login"));
@@ -43,8 +48,24 @@ namespace TypeManShip
             users_relay.adapter.InsertCommand.Parameters.Add(new MySqlParameter("expected_speed", MySqlDbType.Float, 40, "expected_speed"));
             users_relay.adapter.InsertCommand.Parameters.Add(new MySqlParameter("dispersion", MySqlDbType.Float, 40, "dispersion"));
             MySqlParameter passw_parameter = users_relay.adapter.InsertCommand.Parameters.Add("id", MySqlDbType.Int32, 0, "id");
-
             passw_parameter.Direction = ParameterDirection.Output;
+
+            //update query
+
+            users_relay.adapter.UpdateCommand = new MySqlCommand("UPDATE users SET login = @login , password = @password , " +
+                "complexity = @complexity , expected_speed = @expected_speed , dispersion = @dispersion WHERE id = @id");
+            users_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@login", MySqlDbType.VarString, 40, "login"));
+            users_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@password", MySqlDbType.VarString, 40, "password"));
+            users_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@complexity", MySqlDbType.VarString, 40, "complexity"));
+            users_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@expected_speed", MySqlDbType.Float, 40, "expected_speed"));
+            users_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@dispersion", MySqlDbType.Float, 40, "dispersion"));
+            MySqlParameter user_update_parameter = users_relay.adapter.UpdateCommand.Parameters.Add("@id", MySqlDbType.Int32, 0, "id");
+            user_update_parameter.SourceVersion = DataRowVersion.Original;
+
+            //queries for "password_entries" table
+
+            //insert query
+
             passw_entries_relay.adapter.InsertCommand = new MySqlCommand("password_entry", connection);
             passw_entries_relay.adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
             passw_entries_relay.adapter.InsertCommand.Parameters.Add(new MySqlParameter("userid", MySqlDbType.Int32, 50, "userid"));
@@ -59,8 +80,36 @@ namespace TypeManShip
             passw_entries_relay.adapter.InsertCommand.Parameters.Add(new MySqlParameter("bio_vector", MySqlDbType.VarString, 300, "bio_vector"));
             MySqlParameter parameter = passw_entries_relay.adapter.InsertCommand.Parameters.Add("id", MySqlDbType.Int32, 0, "id");
             parameter.Direction = ParameterDirection.Output;
+
+
+            //update query
+
+            passw_entries_relay.adapter.UpdateCommand = new MySqlCommand("UPDATE password_entries SET userid = @userid , speed = @speed , " +
+                "total_time = @total_time , entry_date = @entry_date , t_vecktor = @t_vecktor , tau_vecktor = @tau_vecktor , " +
+                " type1_imp =@type1_imp , type2_imp = @type2_imp , type3_imp = @type3_imp , bio_vector = @bio_vector WHERE id = @id");
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@userid", MySqlDbType.Int32, 50, "userid"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@speed", MySqlDbType.Float, 0, "speed"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@total_time", MySqlDbType.Int32, 0, "total_time"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@entry_date", MySqlDbType.DateTime, 0, "entry_date"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@t_vecktor", MySqlDbType.VarString, 300, "t_vecktor"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@tau_vecktor", MySqlDbType.VarString, 300, "tau_vecktor"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@type1_imp", MySqlDbType.Int16, 0, "type1_imp"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@type2_imp", MySqlDbType.Int16, 0, "type2_imp"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@type3_imp", MySqlDbType.Int16, 0, "type3_imp"));
+            passw_entries_relay.adapter.UpdateCommand.Parameters.Add(new MySqlParameter("@bio_vector", MySqlDbType.VarString, 300, "bio_vector"));
+            MySqlParameter passw_update_parameter = passw_entries_relay.adapter.UpdateCommand.Parameters.Add("@id", MySqlDbType.Int32, 0, "id");
+            user_update_parameter.SourceVersion = DataRowVersion.Original;
+
+
             relays.Add("users", users_relay);
             relays.Add("password_entries", passw_entries_relay);
+            connection.Close();
+        }
+
+        public void ConfigureUserEntriesAdapter(int id)
+        {
+            connection.Open();
+            user_entries = new TableRelay(connection, "password_entries", id);
             connection.Close();
         }
         public void GetData(string tablename, int keyidx)
@@ -70,6 +119,17 @@ namespace TypeManShip
             relays[tablename].adapter.Fill(data);
             data.Tables[tablename].Columns[keyidx].AutoIncrement = true;
             data.Tables[tablename].PrimaryKey = new DataColumn[] { data.Tables[tablename].Columns[0] };
+            data.AcceptChanges();
+            connection.Close();
+        }
+
+        public void GetUserEntriesData(int keyidx)
+        {
+            connection.Open();
+            //data = new DataSet("un_groups");
+            user_entries.adapter.Fill(data);
+            data.Tables["password_entries"].Columns[keyidx].AutoIncrement = true;
+            data.Tables["password_entries"].PrimaryKey = new DataColumn[] { data.Tables["password_entries"].Columns[0] };
             data.AcceptChanges();
             connection.Close();
         }
@@ -110,6 +170,8 @@ namespace TypeManShip
             if (data.HasChanges())
             {
                 connection.Open();
+                //DataSet change = data.GetChanges();
+
                 foreach (KeyValuePair<string, TableRelay> relay in relays)
                 {
                     DataTable changes = data.Tables[relay.Key].GetChanges();
@@ -127,14 +189,44 @@ namespace TypeManShip
                 connection.Close();
             }
         }
+        public void UpdateUserEntries()
+        {
+            if (data.HasChanges())
+            {
+                connection.Open();
+                //DataSet change = data.GetChanges();
+                DataTable changes = data.Tables["password_entries"].GetChanges();
+                if (changes != null)
+                {
+                    user_entries.adapter.Update(changes);
+                    data.Tables["password_entries"].Merge(changes, false);
+                    //data.Tables[relay.Key].Clear();
+                    //relay.Value.adapter.Fill(data);
+                    data.AcceptChanges();
+                }
 
+                //data.Merge(changes);
+                
+                connection.Close();
+            }
+        }
+
+
+        public void FillUserSet()
+        {
+            data.Clear();
+            GetUserEntriesData(0);
+            data.Tables["password_entries"].Columns[0].ReadOnly = true;
+
+        }
 
         public void FillSet()
         {
-
+            data.Clear();
             GetData("users", 0);
             GetData("password_entries", 0);
             data.Tables["users"].Columns[0].ReadOnly = true;
+
             data.Tables["password_entries"].Columns[0].ReadOnly = true;
           
             //ForeignKeyConstraint foreignKey = new ForeignKeyConstraint(data.Tables["un_groups"].Columns[0], data.Tables["students"].Columns[2])

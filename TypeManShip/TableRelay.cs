@@ -23,6 +23,16 @@ namespace TypeManShip
             adapter.UpdateCommand = builder.GetUpdateCommand();
         }
 
+        public TableRelay(MySqlConnection connection, string tablename, int foreign_key)
+        {
+            adapter = new MySqlDataAdapter();
+            adapter.TableMappings.Add("Table", tablename);
+            MySqlCommand command = new MySqlCommand(string.Format("Select * From {0} WHERE userid = {1} ", tablename, foreign_key), connection);
+            adapter.SelectCommand = command;
+            builder = new MySqlCommandBuilder(adapter);
+            //adapter.UpdateCommand = builder.GetUpdateCommand();
+        }
+
         //public void Fill(ref DataSet data)
         //{
         //    adapter.Fill(data);

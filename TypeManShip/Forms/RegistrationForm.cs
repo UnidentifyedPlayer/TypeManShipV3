@@ -142,5 +142,24 @@ namespace TypeManShip
             passw_box.Text = "";
             controller.Reset();
         }
+
+        private void entries_button_Click(object sender, EventArgs e)
+        {
+            string message = "";
+            int userid = controller.GetUser(login_box.Text, passw_box.Text);
+            if (userid == -1)
+            {
+                message = controller.error;
+                MessageBox.Show(message);
+            }
+            else
+            {
+
+                UserData stats_form = new UserData(ref controller, userid);
+                stats_form.Show();
+            }
+            passw_box.Text = "";
+            controller.Reset();
+        }
     }
 }

@@ -37,6 +37,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.stats_button = new System.Windows.Forms.Button();
             this.day_stats_button = new System.Windows.Forms.Button();
+            this.entries_button = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // login_box
@@ -123,11 +124,22 @@
             this.day_stats_button.UseVisualStyleBackColor = true;
             this.day_stats_button.Click += new System.EventHandler(this.button2_Click);
             // 
+            // entries_button
+            // 
+            this.entries_button.Location = new System.Drawing.Point(81, 241);
+            this.entries_button.Name = "entries_button";
+            this.entries_button.Size = new System.Drawing.Size(132, 23);
+            this.entries_button.TabIndex = 9;
+            this.entries_button.Text = "Данные вводов";
+            this.entries_button.UseVisualStyleBackColor = true;
+            this.entries_button.Click += new System.EventHandler(this.entries_button_Click);
+            // 
             // RegistrationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(313, 247);
+            this.ClientSize = new System.Drawing.Size(313, 279);
+            this.Controls.Add(this.entries_button);
             this.Controls.Add(this.day_stats_button);
             this.Controls.Add(this.stats_button);
             this.Controls.Add(this.label1);
@@ -155,5 +167,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button stats_button;
         private System.Windows.Forms.Button day_stats_button;
+        private System.Windows.Forms.Button entries_button;
     }
 }

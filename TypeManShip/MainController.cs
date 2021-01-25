@@ -22,7 +22,8 @@ namespace TypeManShip
     public class MainController
     {
         static int EntriesCountThreshold = 5;
-        static float[,] H = new float[,] {
+        int N;
+        float[,] H = new float[,] {
                 { 1,  1, 1,  1 , 1 ,  1 , 1 , 1 },
                 { 1,  1, 1,  1, -1,  -1, -1, -1 },
                 { (float)Math.Sqrt(2), (float)Math.Sqrt(2), -(float)Math.Sqrt(2), -(float)Math.Sqrt(2) , 0 , 0 , 0 , 0 },
@@ -105,6 +106,7 @@ namespace TypeManShip
 
         public MainController()
         {
+
             pressed_keys = new Dictionary<Keys, KeyPressData>();
             data_samples = new List<PhraseInputStat>();
             timer = new Stopwatch();
@@ -115,6 +117,8 @@ namespace TypeManShip
             press_count = 0;
             DataControl = new DBController();
             cur_entry = new PhraseInputStat();
+            N = 8;
+            H = Haar.GetHaarMatrix(N);
         }
 
         public bool SetPassword(string passw)
@@ -385,17 +389,17 @@ namespace TypeManShip
 
         public float[] DiscreteTimeFunc()
         {
-            float time_stamp = cur_entry.PressTime / 8;
-            float[] func_values = new float[8];
+            float time_stamp = cur_entry.PressTime / N;
+            float[] func_values = new float[N];
             float amp = 0.5f;
-            for(int i = 0; i<8; i++)
+            for(int i = 0; i<N; i++)
             {
                 float time = time_stamp * i;
                 int count = 0;
                 for(int z = 0; z < cur_entry.press_data.Count; z++)
                 {
-                    if ((cur_entry.press_data[z].key_down_time <= z)
-                        && (cur_entry.press_data[z].key_up_time >= z))
+                    if ((cur_entry.press_data[z].key_down_time <= time)
+                        && (cur_entry.press_data[z].key_up_time >= time))
                         count++;
                 }
                 if (count > 1)
@@ -409,15 +413,15 @@ namespace TypeManShip
         public void BioVecktor()
         {
             float[] func = DiscreteTimeFunc();
-            cur_entry.bio_vecktor = new float[8];
-            for(int i = 0;i<8; i++)
+            cur_entry.bio_vecktor = new float[N];
+            for(int i = 0;i<N; i++)
             {
                 cur_entry.bio_vecktor[i] = 0;
-                for (int z = 0; z<8; z++)
+                for (int z = 0; z<N; z++)
                 {
                     cur_entry.bio_vecktor[i] += func[z] * H[i, z];
                 }
-                cur_entry.bio_vecktor[i] = cur_entry.bio_vecktor[i] / 8;
+                cur_entry.bio_vecktor[i] = cur_entry.bio_vecktor[i] / N;
             }
         }
 
